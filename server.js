@@ -116,7 +116,10 @@ router.route('/movies')
 
         newMovie.save(function(err) {
             if (err) {
-                return res.send(err)
+                res.send({
+                    success: false,
+                    err
+                })
             }
 
             res.send({
@@ -126,6 +129,24 @@ router.route('/movies')
         })
     }
 })
+
+router.route('/movies/:movieID')
+    .post(authJwtController.isAuthenticated, function(req, res) {
+        const id = req.params.movieID
+        Movie.findByIdAndUpdate(id, res.body, (err) => {
+            if (err) {
+                res.send({
+                    success: false,
+                    err
+                })
+            }
+
+            res.send({
+                success: true,
+                message: 'Movie updated'
+            })
+        })
+    })
 
 router.route('/movies')
     .get(function (req, res) {
