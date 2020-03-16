@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var passport = require('passport');
 var authJwtController = require('./auth_jwt');
 var User = require('./Users');
+var Movie = require('./Movies')
 var jwt = require('jsonwebtoken');
 var cors = require('cors');
 
@@ -96,6 +97,73 @@ router.post('/signin', function(req, res) {
 
     });
 });
+
+router.post('/movies', function(req, res) {
+    if (!req.body.title) {
+        res.json({success: false, message: 'Please pass movie title.'});
+    } else if (!req.body.year_released) {
+        res.json({success: false, message: 'Please pass movie release year.'})
+    } else if (!req.body.genre) {
+        res.json({success: false, message: 'Please pass movie genre.'})
+    } else if (!req.body.actors || req.body.actors.length < 3) {
+        res.json({success: false, message: 'Please pass at least three actors in movie.'})
+    } else {
+        var newMovie = new Movie();
+        newMovie.title = req.body.title;
+        newMovie.year_released = req.body.year_released;
+        newMovie.genre = req.body.genre;
+        newMovie.actors = req.body.actors;
+
+        newMovie.save(function(err) {
+            if (err) {
+                return res.send(err)
+            }
+
+            res.send({
+                success: true,
+                message: `"${newMovie.title}" created!`
+            })
+        })
+    }
+})
+
+router.route('/movies')
+    .get(function (req, res) {
+        Movie.find(function (err, movies) {
+            if (err) res.send(err);
+            // return the movies
+            res.json(movies);
+        });
+});
+
+router.route('/movies/:movieID')
+    .get(function (req, res) {
+        var id = req.params.movieID
+        Movie.findById(id, function (err, movie) {
+            if (err) res.send(err);
+            // return the movie
+            res.json(movie);
+        });
+    });
+
+router.route('/movies/:movieID')
+    .delete(function (req, res) {
+        const id = req.params.movieID
+        Movie.findByIdAndDelete(id, function(err, movie) {
+            if (err) res.send(err)
+            else if (!movie) {
+                res.send({
+                    success: false,
+                    message: `ID#${id} could not be found`
+                })
+            } else {
+                res.send({
+                    success: true,
+                    message: `${movie.title} has been deleted.`
+                })
+            }
+        })
+    })
 
 app.use('/', router);
 app.listen(process.env.PORT || 8080);
