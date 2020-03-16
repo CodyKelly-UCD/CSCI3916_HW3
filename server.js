@@ -133,17 +133,22 @@ router.route('/movies')
 router.route('/movies/:movieID')
     .post(authJwtController.isAuthenticated, function(req, res) {
         const id = req.params.movieID
-        Movie.findByIdAndUpdate(id, res.body, (err, result) => {
+        Movie.findByIdAndUpdate(id, req.body, function(err, result) {
             if (err) {
                 res.send({
                     success: false,
                     err
                 })
             }
-
+            else if (result === null) {
+                res.send({
+                    success: false,
+                    message: "Movie not found."
+                })
+            }
             res.send({
                 success: true,
-                result
+                message: "Movie updated"
             })
         })
     })
