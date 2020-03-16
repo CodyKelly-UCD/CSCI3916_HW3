@@ -76,7 +76,6 @@ router.post('/signup', function(req, res) {
 
 router.post('/signin', function(req, res) {
     var userNew = new User();
-    //userNew.name = req.body.name;
     userNew.username = req.body.username;
     userNew.password = req.body.password;
 
@@ -98,7 +97,8 @@ router.post('/signin', function(req, res) {
     });
 });
 
-router.post('/movies', function(req, res) {
+router.route('/movies')
+    .post(authJwtController.isAuthenticated, function(req, res) {
     if (!req.body.title) {
         res.json({success: false, message: 'Please pass movie title.'});
     } else if (!req.body.year_released) {
@@ -147,7 +147,7 @@ router.route('/movies/:movieID')
     });
 
 router.route('/movies/:movieID')
-    .delete(function (req, res) {
+    .delete(authJwtController.isAuthenticated, function (req, res) {
         const id = req.params.movieID
         Movie.findByIdAndDelete(id, function(err, movie) {
             if (err) res.send(err)
